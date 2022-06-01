@@ -1,0 +1,22 @@
+# Generate RT email
+#
+# Uses template found in `ci/rt-template.txt`.
+# It tries to populate the PACKAGES with packages released by the pipeline
+# (works with the `debian-release.yml` task) and also tries
+# to grab changes since the last merged MR into GOALS
+generate-rt:
+  image: docker.ops.iszn.cz/baseimage/debian-java8-jdk-ci:$DIST
+  stage: generate-rt
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  variables:
+    SMTP_SERVER: smtp2.kancelar.seznam.cz
+  script:
+    - export RT_SUPPORT=$(git log -1 --format='%an <%ae>')
+    - export RT_DATE=$(date +%d.%m.%Y)
+    - export RT_GOALS=$(git log -1 --format='%b' | sed '/See merge request/d')
+    - export RT_PACKAGES="$(cat ./release-*/deb-release.PACKAGES)"
+    - export RT=$(envsubst < ci/rt-template.txt)
+    - echo "${RT}"
+    - export COMMIT_AUTHOR_EMAIL=$(git log -1 --format='%ae')
+    - sendemail -f sklik.ci@firma.seznam.cz -t ${COMMIT_AUTHOR_EMAIL} -u "RT for ${CI_PROJECT_NAME}" -m "${RT}" -s ${SMTP_SERVER} -o message-charset=UTF-8

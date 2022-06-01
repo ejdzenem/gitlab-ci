@@ -1,0 +1,13 @@
+# Publish component to Maven repository using Gradle
+#
+# Variables:
+#   DIST: debian distribution
+.gradle-publish:
+  image: docker.ops.iszn.cz/baseimage/debian-java8-jdk-ci:$DIST
+  stage: release
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  script:
+    # It loads username and password for maven repo from env variables MAVEN_REPO_USERNAME and MAVEN_REPO_PASSWORD
+    # which are specified as gitlab `secret variables`
+    - ${PROJECT_DIR:-.}/gradlew publish

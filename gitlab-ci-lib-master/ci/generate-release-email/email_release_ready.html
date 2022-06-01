@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"><html lang="en"><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<style type="text/css">
+        a.btn {
+            background-color: #1aaa55;
+            border-color: #168f48;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 400;
+            padding: 6px 10px;
+            margin-left: 130px;
+            display: inline-block;
+            white-space: nowrap;
+            font-weight: 400;
+            text-align: center;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            line-height: 20px;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+<body>
+<div class="content">
+
+	<p>
+		Your release of <strong>$COMPONENT</strong> component is ready to deploy! 🎉
+	</p>
+	<a href="https://${CI_SERVER_HOST}/${ADMIN_TEAM}/infrastructure/-/issues/new?issue[title]=${ISSUE_TITLE}&issue[description]=${ISSUE_DESCRIPTION_URLENCODED}"
+	   class="btn">
+		New release issue
+	</a>
+	<p>
+		<i>
+			$ADDITIONAL_EMAIL_NOTES
+		</i>
+	</p>
+</div>
+<h3>
+</h3>
+<div class="footer" style="margin-top: 10px;">
+	<p style="font-size: small; color: #777;">
+		—
+		<br>
+		You're receiving this email because you tagged the <strong>${COMPONENT}</strong> on ${CI_SERVER_HOST}.
+	</p>
+	</center>
+</body>
+</html>

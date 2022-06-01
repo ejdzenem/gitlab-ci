@@ -1,0 +1,78 @@
+# variables possible to override in email:
+#   - COMPONENT - name of component
+#   - ADMIN_TEAM - part of url specifying team repository e.g. se/a6
+#   - ADDITIONAL_EMAIL_NOTES - notes under button, it's possible to add part of html too
+.send-email: &send-email
+  - curl https://sklik-backend.glpages.seznam.net/sklik.stats/gitlab-ci-lib/ci-lib.tar.gz | tar xzf - -C /
+  - export COMMIT_LIST=$(/ci/generate-release-email/last-commits.sh 2)
+  - export AUTHOR_USERNAME=$(cut -d@ -f1 <<< $GITLAB_USER_EMAIL)
+  - export TAG_VERSION=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+([-+][-+_a-zA-Z0-9]+)?' <<< "${CI_COMMIT_TAG}")
+  - export VERSION_MAJOR_CHECKBOX=" "
+  - export VERSION_MINOR_CHECKBOX=" "
+  - export ADMIN_TEAM=${ADMIN_TEAM:-"se/a6"}
+  - export SMTP_SERVER="smtp2.kancelar.seznam.cz"
+  - if [[ "$TAG_VERSION" =~ ^[0-9]+\.0\.0$ ]]; then export VERSION_MAJOR_CHECKBOX=x; else export VERSION_MINOR_CHECKBOX=x; fi
+  - export ISSUE_DESCRIPTION=$(envsubst < /ci/generate-release-email/${RELEASE_TEMPLATE})
+  - export ISSUE_DESCRIPTION_URLENCODED=$(jq -sRr @uri <<< "${ISSUE_DESCRIPTION}")
+  - export ISSUE_TITLE="Sklik - Release of ${COMPONENT}=${TAG_VERSION}"
+  - export EMAIL_BODY=$(envsubst < /ci/generate-release-email/email_release_ready.html)
+  - sendemail -f sklik.ci@firma.seznam.cz -t ${GITLAB_USER_EMAIL} -u "[CI] ${ISSUE_TITLE}" -m "${EMAIL_BODY}" -s ${SMTP_SERVER} -o message-charset=UTF-8
+    #For debugging purposes:
+  - echo "GITLAB_USER_EMAIL='${GITLAB_USER_EMAIL}'"
+  - echo "ISSUE_TITLE='${ISSUE_TITLE}'"
+  - echo "EMAIL_BODY='${EMAIL_BODY}'"
+
+
+.generate-release-email: &generate-release-email
+  image: docker.ops.iszn.cz/baseimage/debian-java8-jdk-ci:buster
+  stage: generate-release-email
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+
+# variables possible to override in template:
+#   - SERVERS - list of servers, where package should be installed
+#   - DESCRIPTION - step by step description
+#   - ROLLBACK - rollback scenario when it's applicable
+.generate-release-email-a6-issue:
+  script:
+    - export RELEASE_TEMPLATE="release_template_A6.md"
+    - export SUPPORT=$(git log -1 --format='%an <%ae>')
+    - export DATE=$(date +%d.%m.%Y)
+    - export PACKAGES=$(find . -type f -name "*.PACKAGES" -exec cat {} \;)
+    - export SERVERS=${SERVERS:-"skotchlauncher.ko.seznam.cz"}
+    - export DESCRIPTION=${DESCRIPTION:-"Nainstalovat novou verzi ${DEB_PACKAGE_NAME}."}
+    - export ROLLBACK=${ROLLBACK:-"Návrat na předchozí verzi ${DEB_PACKAGE_NAME}."}
+    - *send-email
+  <<: *generate-release-email
+
+# variables possible to override in template:
+#   - ADDITIONAL_ISSUE_DESCRIPTION - other issue description (such as changes or any other information you want to provide)
+.generate-release-email-adminsbrno1-issue:
+  script:
+    - export RELEASE_TEMPLATE="release_template_adminsbrno1.md"
+    - export ADMIN_TEAM=${ADMIN_TEAM:-"adminsbrno1"}
+    - export ADDITIONAL_EMAIL_NOTES=${ADDITIONAL_EMAIL_NOTES:-$'Please deploy only to KO datacenter using\n<a href="https://cd.sklik.cz/environments/13,15,14/component_environments?filter_components=flinker%7Cfastfeedback&filter_op=false?filter_components=flinker%7Cfastfeedback&filter_op=0&hide_disabled=1">AutoAdmins</a>.'}
+    - *send-email
+  <<: *generate-release-email
+
+#DEPRECATED: - use `.generate-release-email-a6-issue` instead
+.generate-release-email-spark-issue:
+  script:
+    - export RELEASE_TEMPLATE="release_template_A6.md"
+    - export SUPPORT=$(git log -1 --format='%an <%ae>')
+    - export DATE=$(date +%d.%m.%Y)
+    - export PACKAGES=$(find . -type f -name "*.PACKAGES" -exec cat {} \;)
+    - export SERVERS=${SERVERS:-"skotchlauncher.ko.seznam.cz"}
+    - export DESCRIPTION=${DESCRIPTION:-"Nainstalovat novou verzi ${DEB_PACKAGE_NAME}."}
+    - export ROLLBACK=${ROLLBACK:-"Návrat na předchozí verzi ${DEB_PACKAGE_NAME}."}
+    - *send-email
+  <<: *generate-release-email
+
+#DEPRECATED: use `.generate-release-email-adminsbrno1-issue` instead
+.generate-release-email-flink-issue:
+  script:
+    - export RELEASE_TEMPLATE="release_template_adminsbrno1.md"
+    - export ADDITIONAL_EMAIL_NOTES=${ADDITIONAL_EMAIL_NOTES:-$'Please deploy only to KO datacenter using\n<a href="https://cd.sklik.cz/environments/13,15,14/component_environments?filter_components=flinker%7Cfastfeedback&filter_op=false?filter_components=flinker%7Cfastfeedback&filter_op=0&hide_disabled=1">AutoAdmins</a>.'}
+    - *send-email
+  <<: *generate-release-email
+

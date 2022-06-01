@@ -1,0 +1,20 @@
+##### GOAL:
+${COMMIT_LIST}
+
+##### SUPPORT:
+${SUPPORT}
+
+##### DATE:
+${DATE}
+
+##### PACKAGES:
+${PACKAGES}
+
+##### SERVERS:
+${SERVERS}
+
+##### DESCRIPTION:
+${DESCRIPTION}
+
+##### ROLLBACK:
+${ROLLBACK}

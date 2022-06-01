@@ -1,0 +1,37 @@
+# Release docker image to a development registry
+# defined in group ENV var `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_NAMESPACE`
+#
+# It is meant to work with artifacts produced by the docker-build task
+#
+# Variables:
+#   COMPONENT: name of the component
+#   CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_NAMESPACE: should be set in the group ENV
+docker-release-dev:
+  image: docker.ops.iszn.cz/sklik-devops/ci-scripts:1
+  stage: release
+  dependencies:
+    - build-docker
+  script:
+    - /ci/docker-release.sh --namespace ${CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_NAMESPACE} --component $COMPONENT --extra-tags "$(/ci/latest-tags.sh)"
+  artifacts:
+    expire_in: 3 mos
+    paths:
+      - docker-release.uri
+      - docker-release.digest
+
+# Release docker image to a production registry
+# defined in group ENV var `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_NAMESPACE`
+#
+# It is meant to work with artifacts produced by the docker-release-dev task
+#
+# Variables:
+#   CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_NAMESPACE: should be set in the group ENV
+docker-release-production:
+  image: docker.ops.iszn.cz/sklik-devops/ci-scripts:1
+  stage: release
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  dependencies:
+    - docker-release-dev
+  script:
+    - /ci/docker-release-to-production-registry.sh --docker-image-name-file docker-release.uri --docker-image-digest-file docker-release.digest

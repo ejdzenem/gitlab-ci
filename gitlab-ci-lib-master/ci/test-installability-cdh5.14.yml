@@ -1,0 +1,15 @@
+# Test installability on debian with CDH 5.14 repos
+#
+# It is meant to work with artifacts produced by the `debian-build.yml` task
+#
+# Variables:
+#   DIST: debian distribution
+#   DEB_PACKAGE_NAME: name of the package
+test-installability-cdh5.14:
+  image: docker.ops.iszn.cz/sklik-stats-dev/debian-cdh:jessie-cdh5.14.0
+  stage: check
+  before_script:
+    - apt-get update
+  script: |
+    curl --insecure https://generic.${GITLAB_PAGES_DOMAIN}/ci-scripts/v1/all.tar.gz | tar xzf - --directory /
+    /ci/test-deb-install-uninstall.sh ./deb-$DIST/${DEB_PACKAGE_NAME}_*.deb

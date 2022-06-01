@@ -1,0 +1,9 @@
+# Run tests for component using Gradle
+#
+# Variables:
+#   DIST: debian distribution
+.gradle-test:
+  image: docker.ops.iszn.cz/baseimage/debian-java8-jdk-ci:$DIST
+  stage: test
+  script:
+    - ${PROJECT_DIR:-.}/gradlew test

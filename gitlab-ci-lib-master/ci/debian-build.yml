@@ -1,0 +1,23 @@
+# Build debian package
+#
+# The build command defaults to `make deb`. It can be overridden using
+# the DEBIAN_BUILD_COMMAND env variable.
+#
+# Variables:
+#   DIST: debian distribution to build for
+#   DEB_PACKAGE_NAME: name of the package - used for copying the built package around
+# Optional variables:
+#   DEBIAN_BUILD_COMMAND: command used to build package.
+debian-build:
+  image: docker.ops.iszn.cz/baseimage/debian-java8-jdk-ci:$DIST
+  stage: build
+  script:
+    - DEBIAN_BUILD_COMMAND=${DEBIAN_BUILD_COMMAND:-"make deb"}
+    - eval $DEBIAN_BUILD_COMMAND
+    - mkdir deb-$DIST
+    - mv ../${DEB_PACKAGE_NAME}_*.deb ./deb-$DIST/
+  artifacts:
+    expire_in: 2 weeks
+    name: $DEB_PACKAGE_NAME-$CI_BUILD_NAME-$CI_BUILD_REF_NAME-deb
+    paths:
+    - ./deb-$DIST/${DEB_PACKAGE_NAME}_*.deb

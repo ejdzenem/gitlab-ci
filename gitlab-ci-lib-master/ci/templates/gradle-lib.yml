@@ -1,0 +1,31 @@
+image: docker.ops.iszn.cz/sklik-devops/ci-scripts:1
+
+stages:
+  - test
+  - release
+
+variables:
+  DIST: "jessie"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  # See https://docs.gitlab.com/ee/ci/caching/#share-caches-across-the-same-branch
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+    - .gradle/caches
+    - .gradle/wrapper
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+include:
+  - '/ci/tag-gradle-version-check.yml'
+  - '/ci/skeletons/gradle-test.yml'
+  - '/ci/skeletons/gradle-publish.yml'
+
+gradle-test:
+  extends: .gradle-test
+
+gradle-publish:
+  extends: .gradle-publish

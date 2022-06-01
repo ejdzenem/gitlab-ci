@@ -1,0 +1,21 @@
+# Release debian package
+#
+# It is meant to work with artifacts produced by the `debian-build.yml` task
+#
+# Variables:
+#   DIST: debian distribution
+#   DEB_PACKAGE_NAME: name of the package
+debian-release:
+  image: docker.ops.iszn.cz/sklik-devops/ci-scripts:1
+  stage: release
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  script:
+    - mkdir release-$DIST
+    - /ci/deb-release.sh --suite=$DIST-testing --wait 200 deb-$DIST/${DEB_PACKAGE_NAME}_*.deb
+    - mv deb-release.* release-$DIST
+  artifacts:
+    expire_in: 3 mos
+    name: repo-debian
+    paths:
+      - release-$DIST/deb-release.*

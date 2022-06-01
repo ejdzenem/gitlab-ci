@@ -1,0 +1,18 @@
+# Check tag against gradle version
+#
+# It works with tags in the form vX.Y.Z
+# It expects that the gradle build has a task `printVersion`
+# See https://gitlab.seznam.net/sklik-backend/sklik.stats/stataggregator-dummy/-/blob/1bf4812f9a279577ce4ee65f681466141ace32df/build.gradle#L81
+# for a definition of a compatible task.
+# It is possible to set additional Gradle arguments (e.g. -PscalaVersions=2.12.10) using GRADLE_OPT_ARGS env variable.
+tag-gradle-version-check:
+  image: docker.ops.iszn.cz/baseimage/debian-java8-jdk-ci:buster
+  stage: test
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  script:
+    - export TAG_VERSION=$(sed 's/^.//' <<< ${CI_COMMIT_TAG})
+    - export GRADLE_VERSION=$(./gradlew -q ${GRADLE_OPT_ARGS} printVersion)
+    - echo "Version from tag:" ${TAG_VERSION}
+    - echo "Version from build.gradle:" ${GRADLE_VERSION}
+    - test "${TAG_VERSION}" == "${GRADLE_VERSION}"
