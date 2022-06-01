@@ -1,0 +1,13 @@
+.pylint:
+  image: docker.ops.iszn.cz/upstream/python:3.9-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y gcc
+    - pip install -r requirements.txt
+    - pip install pylint
+  script:
+    - pylint $DIR
+  allow_failure: true    
+  only:
+    - master
+    - merge_request

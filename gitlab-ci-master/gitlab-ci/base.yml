@@ -1,0 +1,162 @@
+variables:
+  DOCKER_NAMESPACE: mapycz-dev
+  DOCKER_REGISTRY: docker.ops.iszn.cz
+
+  CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY: $DOCKER_REGISTRY
+
+  IMAGE_COMPOSE: $DOCKER_REGISTRY/mapycz/jenkins-docker-compose
+
+default:
+  image: docker.ops.iszn.cz/mapycz/ci-scripts
+
+workflow:
+  rules:
+    # not on tags and switch branch pipeline for MR pipeline
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+# Preparation phase - setup some environments and print out info for this run
+.prep:
+  variables:
+    COMPONENT: $CI_PROJECT_NAME
+  before_script:
+    - echo $CI_JOB_TRIGGERED
+    - echo $CI_PIPELINE_SOURCE
+    - echo $CI_COMMIT_SHA
+    - echo $CI_COMMIT_REF_NAME
+    - echo $CI_BUILD_REF
+    - echo $CI_COMMIT_BRANCH
+    - echo $CI_COMMIT_TAG
+    # Get the information about the state of the current commit
+    - git log --decorate=full| grep "^commit $CI_COMMIT_SHA[ ]" || echo "Failed???"
+    - git status
+    - git remote show
+    # Show current branch --> normally fails - only for kept for reference
+    - git symbolic-ref --short HEAD || echo "Doesn't work"
+    # Some more possible debug information
+    - git branch --contains $CI_BUILD_REF
+    - git tag --contains $CI_BUILD_REF
+    - env
+    - echo "COMPONENT=$COMPONENT" >> prep.env
+    - echo "DOCKER_IMAGE=$(. /ci/common.sh; get_ci_docker_image_name)" >> prep.env
+  script:
+    - touch prep.env
+  artifacts:
+    reports:
+      dotenv: prep.env
+    when: on_success
+
+# Build image and push it
+# Requires $COMP specified
+.docker:
+  tags:
+    - docker-socket-bind
+  before_script:
+    - mkdir -p $HOME/.docker
+    - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+  script:
+    - /ci/docker-build.sh --component "$COMP" ${DOCKER_OPTIONS}
+    - /ci/docker-release-ci.sh --namespace "$DOCKER_NAMESPACE" --component "$COMP" --overwrite
+
+# Deploy to $NAMESPACE, $LOCALITY and optional $ENVRIONMENT_SUFFIX
+.deploy-ci:
+  environment:
+    name: $NAMESPACE-$LOCALITY$ENVIRONMENT_SUFFIX
+    kubernetes:
+      namespace: $NAMESPACE
+  variables:
+    COMP: $COMPONENT
+  stage: deploy
+  script: 
+    - /ci/kubernetes-ci-init.sh
+    - /ci/kubernetes-config.sh --component $COMP --env=${KUBE_NAMESPACE}
+    - /ci/kubernetes-deploy.sh --namespace ${KUBE_NAMESPACE} --env ${KUBE_NAMESPACE} --deploy-timeout 600
+  
+# Shortcut to deploy to master
+# Just set $LOCALITY [ko1, ng1...]
+.deploy-master:
+  variables:
+    NAMESPACE: mapy-master
+    ENVIRONMENT_SUFFIX: /master
+  extends: 
+    - .deploy-ci
+  only:
+    - master
+
+# Dtto as master only for testing
+.deploy-testing:
+  variables:
+    NAMESPACE: mapy-testing
+  extends: 
+    - .deploy-ci
+  only:
+    - master
+  
+# Deploy branch to master with name of the component 
+# Stop in 1 day
+.deploy-branch:
+  variables:
+    NAMESPACE: mapy-master
+    COMP: $COMPONENT-$CI_COMMIT_REF_SLUG
+    ENVIRONMENT_SUFFIX: /$CI_COMMIT_REF_NAME
+  environment:
+    name: $NAMESPACE-$LOCALITY/$CI_COMMIT_REF_NAME
+    kubernetes:
+      namespace: $NAMESPACE
+    auto_stop_in: 1 day
+    on_stop: branch-stop  
+  extends: 
+    - .deploy-ci
+  except:
+    - master
+  when: manual
+
+# Stop the branch deployment
+.branch-stop:
+  variables:
+    NAMESPACE: mapy-master
+    GIT_STRATEGY: none
+    COMP: $COMPONENT-$CI_COMMIT_REF_SLUG
+  environment:
+    name: $NAMESPACE-$LOCALITY/$CI_COMMIT_REF_NAME
+    kubernetes:
+      namespace: $NAMESPACE
+    action: stop
+  script:
+    - /ci/kubernetes-ci-init.sh
+    - /ci/kubernetes-config.sh --component $COMP --env=${KUBE_NAMESPACE}
+    - /ci/kubernetes-delete-objects.sh --namespace $KUBE_NAMESPACE --kind deployment --label app="$COMP"
+  except:
+    - master
+  when: manual
+
+# Deploy to kubernetes via deployer
+# Not tested yet
+.deploy-k8s: 
+  script:
+    - rm -rf deployment/kubernetes
+    - /ci/kubernetes-config-custom.sh --app $COMP --env-file=conf/${KUBE_NAMESPACE}.env --destination-dir=deployment/kubernetes
+    - cp kubernetes/*.tmpl deployment/kubernetes
+  except:
+    - schedules
+  only:
+    - master
+  artifacts:
+    paths:
+      - deployment/kubernetes/*.yaml
+    expire_in: 14 days
+
+# Dummy tag job, depends on what approach we'll choose
+.tag:
+  when: manual
+  only:
+    - master
+  script:
+    - VERSION=$(. /ci/common.sh; get_version)
+    - echo "You need to create the tag yourself. Sorry."
+    # - git tag VERSION
+    # - git push origin --tags
