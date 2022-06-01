@@ -1,0 +1,32 @@
+.docker-login:
+  script:
+    - |
+      function docker_login {
+        local environment=$1
+        local harbor_token=${HARBOR_TOKEN_DEV}
+        local harbor_user=${HARBOR_USER_DEV}
+
+        if [[ "$environment" == "prod" ]] ; then
+          harbor_token=${HARBOR_TOKEN_PROD}
+          harbor_user=${HARBOR_USER_PROD}
+        fi
+
+        echo "${harbor_token}" | docker login --password-stdin -u ${harbor_user} ${DOCKER_REGISTRY}
+      }
+
+.get-docker-image:
+  script:
+    - |
+      function get_docker_image {
+        local environment=$1
+        local namespace=${HARBOR_NAMESPACE_DEV}
+        local component=${2:-$COMPONENT}
+        local version=${CI_PIPELINE_ID}
+
+        if [[ "$environment" == "prod" ]] ; then
+          namespace=${HARBOR_NAMESPACE_PROD}
+          version=`cat ./package.json | grep version | head -1 | cut -d ':' -f2 | cut -d '"' -f2`
+        fi
+
+        echo "${DOCKER_REGISTRY}/${namespace}/${component}:${version}"
+      }

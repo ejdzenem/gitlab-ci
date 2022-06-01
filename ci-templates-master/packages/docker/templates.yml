@@ -1,0 +1,37 @@
+include: '/packages/docker/functions.yml'
+
+.docker-image:
+  image: docker.ops.iszn.cz/upstream/library/docker:latest
+
+.build-image:
+  extends: .docker-image
+  stage: build
+  script:
+    - !reference [.docker-login, script]
+    - !reference [.get-docker-image, script]
+    - docker_login dev
+    - DEV_IMAGE=`get_docker_image dev $COMPONENT`
+    - echo ${DEV_IMAGE}
+    - DOCKERFILE_PATH=${DOCKERFILE_PATH:="./Dockerfile"}
+    - COMPONENT_PATH=${COMPONENT_PATH:="."}
+    - echo "The path of ${COMPONENT} component is ${COMPONENT_PATH}"
+    - echo "Using ${DOCKERFILE_PATH} to build image."
+    - docker build --pull -t ${DEV_IMAGE} ${EXTRA_BUILD_ARGS} --file ${DOCKERFILE_PATH} ${COMPONENT_PATH}
+    - docker push ${DEV_IMAGE}
+
+.release-image:
+  extends: .docker-image
+  stage: deploy
+  only:
+    - tag
+  script:
+    - !reference [.docker-login, script]
+    - !reference [.get-docker-image, script]
+    - docker_login prod
+    - DEV_IMAGE=`get_docker_image dev $COMPONENT`
+    - PROD_IMAGE=`get_docker_image prod $COMPONENT`
+    - echo ${DEV_IMAGE}
+    - echo ${PROD_IMAGE}
+    - docker pull ${DEV_IMAGE}
+    - docker tag ${DEV_IMAGE} ${PROD_IMAGE}
+    - docker push ${PROD_IMAGE}

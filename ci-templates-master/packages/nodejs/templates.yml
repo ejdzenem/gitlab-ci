@@ -1,0 +1,22 @@
+.npm-image:
+  image: docker.ops.iszn.cz/upstream/node/node:$NODEJS_VERSION-alpine
+
+.npm-node-artifact:
+  artifacts:
+    name: $CI_JOB_NAME
+    paths:
+      - node_modules/
+    expire_in: 30 days
+
+.npm-run:
+  extends: .npm-image
+  script:
+    - '[[ ! -d "node_modules/" ]] && npm $NODEJS_INSTALL_METHOD'
+    - npm run $SCRIPT
+
+.npm-install:
+  extends:
+    - .npm-image
+    - .npm-node-artifact
+  script:
+    - npm $NODEJS_INSTALL_METHOD

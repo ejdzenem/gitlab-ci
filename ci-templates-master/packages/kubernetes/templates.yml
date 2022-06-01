@@ -1,0 +1,26 @@
+.image:
+  image: docker.ops.iszn.cz/cns/kubectl:latest
+
+.init_env:
+  script: '[[ ! -z "$ENV_FILE" ]] && set -o allexport ; source $ENV_FILE ; set +o allexport'
+
+.deploy-envsubst:
+  extends: .image
+  variables:
+    YAML_PATHS: 'kubernetes/*.yml'
+    YAML_PATHS_ROLLOUT_CHECK: 'kubernetes/deployment.yml'
+    DEPLOY_DIR: 'deploy-envsubst'
+  script:
+    - !reference [.init_env, script]
+    # Generate and apply kubernetes yaml files
+    - for file in $YAML_PATHS ; do mkdir -p "$DEPLOY_DIR/${file%/*}" ; envsubst < $file > $DEPLOY_DIR/$file ; cat $DEPLOY_DIR/$file ; kubectl apply -f $DEPLOY_DIR/$file ; done
+    # Check rollout status of yaml files
+    - for file in $YAML_PATHS_ROLLOUT_CHECK ; do kubectl rollout status -f $DEPLOY_DIR/$file ; done
+
+.deploy-clear-envsubst:
+  extends: .image
+  variables:
+    YAML_PATHS: 'kubernetes/*.yml'
+  script:
+    - !reference [.init_env, script]
+    - for file in $YAML_PATHS ; do envsubst < $file | tee /dev/fd/2 | kubectl delete -f - ; done

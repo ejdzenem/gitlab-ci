@@ -1,0 +1,27 @@
+{
+  "name": "cns-ci-templates",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Gitlab CI templates for common use-cases",
+  "scripts": {
+    "changeset": "changeset",
+    "lint": "eslint .",
+    "release": "changeset version && node scripts/releaseTags.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.seznam.net:cns/ci-templates.git"
+  },
+  "license": "ISC",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@changesets/cli": "^2.22.0",
+    "@cns/eslint-config": "^4.1.0",
+    "eslint": "^8.14.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-yml": "^0.14.0",
+    "simple-git": "^3.7.1"
+  }
+}
