@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ env "COMP" | default "cicd-scout" }}
+  namespace: {{ required "KUBE_NAMESPACE must be set!" (env "KUBE_NAMESPACE") }}
+  labels:
+    app: {{ env "COMP" | default "cicd-scout" }}
+    team: mapy.vyvoj
+    admin_team: admins3
+  annotations:
+    szn.deployer: '{"localities": [{{ env "DEPLOY_LOCALITIES" }}], "nocopy": true}'
+    app.gitlab.com/app: "{{ env "CI_PROJECT_PATH_SLUG" }}"
+    app.gitlab.com/env: "{{ env "NAMESPACE" }}-{{ env "LOCALITY" }}{{ env "ENVIRONMENT_SUFFIX" }}"
+
+spec:
+  replicas: {{ env "REPLICA_COUNT" | default "1" }}
+
+  strategy:
+    type: RollingUpdate
+
+  selector:
+    matchLabels:
+      app: cicd-scout
+
+  template:
+    metadata:
+      annotations:
+        app.gitlab.com/app: "{{ env "CI_PROJECT_PATH_SLUG" }}"
+        app.gitlab.com/env: "{{ env "NAMESPACE" }}-{{ env "LOCALITY" }}{{ env "ENVIRONMENT_SUFFIX" }}"
+        team: "mapy.vyvoj@firma.seznam.cz"
+        timestamp: "{{ env "TIMESTAMP" }}"
+      labels:
+        app: cicd-scout
+        team: mapy.vyvoj
+        admin_team: admins3
+    spec:
+      containers:
+      - name: cicd-scout
+        image: {{ required "Docker image" (env "DOCKER_IMAGE") }}
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: cicd-scout
+        resources:
+          requests:
+            cpu:    {{ env "SERVER_CPU_REQ" | default "1" }}
+            memory: {{ env "SERVER_RAM_REQ" | default "100Mi" }}
+          limits:
+            cpu:    {{ env "SERVER_CPU_LIM" | default "1" }}
+            memory: {{ env "SERVER_RAM_LIM" | default "200Mi" }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8010
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8010
+          periodSeconds: 10
+          failureThreshold: 360
+      

@@ -1,0 +1,26 @@
+[flask]
+
+[uwsgi]
+
+conf-file = %p
+lazy-apps = true
+die-on-term = true
+
+uid = nobody
+gid = nogroup
+
+need-app = true
+module = server.private:app
+
+procname-prefix-spaced = private
+
+wsgi-disable-file-wrapper = true  # aby bylo mozny servirovat pomoci BytesIO
+
+master = true
+workers = {{ env "PRIVATE_WORKERS" | default "3" }}
+
+http-socket = {{ env "PRIVATE_LISTEN_SOCKET" | default ":8010" }}
+buffer-size = 65535
+
+[logging]
+level = {{ env "COVID_LOG_LEVEL" | default "INFO" }}

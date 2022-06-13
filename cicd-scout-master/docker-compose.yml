@@ -1,0 +1,17 @@
+version: '2'
+services:
+  app:
+    image: ${DOCKER_IMAGE}
+    env_file: ./conf/${KUBE_CONTEXT}.env    
+    ports:
+      - "8010:8010"
+
+  test:
+    image: ${DOCKER_IMAGE_TEST}
+    env_file: ./conf/${KUBE_CONTEXT}.env
+    working_dir: /app
+    environment:
+      - URL=http://app:8010
+    depends_on:
+      - app
+    command: bash -c "while ! curl --head http://app:8010; do sleep 1; echo 'Waiting...'; done; pytest -v tests;"
