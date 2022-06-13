@@ -1,0 +1,12 @@
+# docker-mock.py state file
+images:
+  "docker.dev.dszn.cz/sklik-devops/envoy:v1.6.8":
+    digest: sha256:e4ae8982a8a6249efefefef4556547374878655efefefffffaaaa89778867567
+    storage:
+      local: false
+      remote: true
+  "docker.dev.dszn.cz/sklik-devops/envoy:v1.7.0":
+    digest: sha256:e4ae8982a8a62496bc94b871dd8409cb7585e3e12b72dde1046c3d6973510c1a
+    storage:
+      local: false
+      remote: true

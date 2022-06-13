@@ -1,0 +1,7 @@
+resources:
+  - kubernetes_deployment.yaml
+
+patches:
+- path: jaeger-agent-sidecar.yaml
+  target:
+    kind: Deployment

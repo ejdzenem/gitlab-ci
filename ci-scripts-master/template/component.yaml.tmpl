@@ -1,0 +1,11 @@
+apiVersion: "component.kubeLauncher.szn.cz/v1beta1"
+kind: KubeLauncherComponent
+spec:
+  descriptor:
+    environment: {{ env "ENVIRONMENT" | default "''" }}
+    name: {{ env "COMPONENT_NAME" | default "''" }}
+    version: {{ env "VERSION" | default "''" }}
+    description: {{ env "DESCRIPTION" | default "''" }}
+    created: {{ env "CREATED" | default "''" }}
+    sourceUrl: {{ env "PROJECT_URL" | default "''" }}
+    pipelineUrl: {{ env "PIPELINE_URL" | default "''" }}
