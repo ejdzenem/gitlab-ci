@@ -31,7 +31,7 @@ It helps you with:
 * [Prepare Kubernetes yaml files with more custom options](lib/kubernetes-config-custom.sh) to deploy app to kubernetes.
 * [Deploy project](lib/kubernetes-deploy.sh) directly to Kubernetes.
 * [Deploy project](lib/argocd.sh) to Kubernetes using Argo CD.
-* [Release debian package](lib/deb-release.sh) to repo.dev.dszn.cz (configurable via both environment variable and switch).
+* [Release debian package](lib/deb-release.sh) to repo.dev.crd.cz (configurable via both environment variable and switch).
 * Release docker image to production registry
   * [using standard docker pull+tag+push mechanism](lib/docker-release-to-production-registry.sh)
 
@@ -66,19 +66,6 @@ and there are some utils scripts to help and check:
      * `conf/`
        * app's configuration template file containing production configuration (except secrets)
        * development.env
-
-### Are there any projects using ci-scripts?
-
-You can see on serveral projects (you may not have read access to all of them):
-* [https://gitlab.seznam.net/sklik-backend/idserver/](https://gitlab.seznam.net/sklik-backend/idserver/blob/master/.gitlab-ci.yml)
-* [https://gitlab.seznam.net/sklik-backend/adminserver](https://gitlab.seznam.net/sklik-backend/adminserver)
-* [https://gitlab.seznam.net/sklik-backend/upload-server](https://gitlab.seznam.net/sklik-backend/upload-server)
-* [https://gitlab.seznam.net/sklik-backend/partnerserver/](https://gitlab.seznam.net/sklik-backend/partnerserver)
-* [https://gitlab.seznam.net/sklik-backend/exporter](https://gitlab.seznam.net/sklik-backend/exporter/blob/master/.gitlab-ci.yml)
-* [https://gitlab.seznam.net/sklik-frontend/frontend-api](https://gitlab.seznam.net/sklik-frontend/frontend-api/blob/master/.gitlab-ci.yml)
-* [https://gitlab.seznam.net/sklik-frontend/userweb](https://gitlab.seznam.net/sklik-frontend/userweb/blob/master/.gitlab-ci.yml)
-* [https://gitlab.seznam.net/sklik-backend/monitoring](https://gitlab.seznam.net/sklik-backend/monitoring)
-
 
 ### How ci-scripts detect[s] component name and/or version?
 
