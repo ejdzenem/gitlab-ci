@@ -1,18 +1,16 @@
-[[_TOC_]]
-
 # CI Scripts
 
 Prepare CI pipeline in a minute!
 
 This scripts helps you with it. CI-scripts are shipped in two ways:
 
-1. As a **Docker image** [`docker.ops.iszn.cz/sklik-devops/ci-scripts:1`](https://docker.ops.iszn.cz/harbor/projects/21/repositories/sklik-devops%2Fci-scripts/tags/1)
+1. As a **Docker image** [`docker.ops.crd.cz/crd-devops/ci-scripts:1`](https://docker.ops.crd.cz/harbor/projects/21/repositories/crd-devops%2Fci-scripts/tags/1)
   where scripts are located in `/ci/` directory.
 *This image could be used directly in your CI pipelines, but please note that **Debian version (which is the base of ci-scripts Docker image) may change without previous notice**, and within any ci-scripts release - [major or minor, (not patch)](https://semver.org/). Because of that, make sure that you **do not depend** on any package versions which may be available (or installable) in ci-scripts Docker image.*
 
-2. [Published on web](https://generic.glpages.seznam.net/ci-scripts/)
+2. [Published on web](https://generic.glpages.creditas.cz/ci-scripts/)
   Available on gitlab pages. This could be used locally by
-  `curl https://generic.glpages.seznam.net/ci-scripts/v1/all.tar.gz | tar xzf -`
+  `curl https://generic.glpages.creditas.cz/ci-scripts/v1/all.tar.gz | tar xzf -`
   Note you need to install ci-scripts dependencies by executing `lib/install-dependencies.sh`
 
 ## Changelog
@@ -89,10 +87,6 @@ and there are some utils scripts to help and check:
 
 Look into [source code for current details and priorities](lib/common.sh), search for functions `get_component()` and `get_version()`.
 
-If you need release based on presence of a git tag read following discussions:
- * #35
- * https://gitlab.seznam.net/generic/ci-scripts/merge_requests/128#note_721391
-
 ### Is there a way how to override most common infrastructure hosts?
 
 Yes, it is possible via following environment variables:
@@ -100,12 +94,12 @@ Yes, it is possible via following environment variables:
    * development docker registry
      * `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY` (docker registry host), `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_USER` (registry CI user when login needed), `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_PASSWORD_FILE` (registry CI password in a file when login needed)
      * older development docker environment variables are deprecated (as of `v1.46.0`):
-       * CI docker registry host: [`CI_SCRIPTS_DOCKER_CI_REGISTRY`](https://gitlab.seznam.net/generic/ci-scripts/blob/master/lib/common.sh#L3)
-       * development docker registry host: [`CI_SCRIPTS_DOCKER_REGISTRY`](https://gitlab.seznam.net/generic/ci-scripts/blob/master/lib/common.sh#L4)
+       * CI docker registry host: [`CI_SCRIPTS_DOCKER_CI_REGISTRY`](https://repo.creditas.cz/generic/ci-scripts/blob/master/lib/common.sh#L3)
+       * development docker registry host: [`CI_SCRIPTS_DOCKER_REGISTRY`](https://repo.creditas.cz/generic/ci-scripts/blob/master/lib/common.sh#L4)
    * production docker registry
      * `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY` (docker registry host), `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_USER` (registry CI user when login needed), `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_PASSWORD_FILE` (registry CI password in a file when login needed)
    * since ci-scripts `v1.48.0` container image copy operation can be done via Harbor docker registry API retag if available, you may use `CI_SCRIPTS_DOCKER_REGISTRY_USE_HARBOR_API_ENABLED=false` to disable Harbor docker registry API operations
- * debian package registry host: [`CI_SCRIPTS_REPO_HOST`](https://gitlab.seznam.net/generic/ci-scripts/blob/master/lib/deb-release.sh#L38)
+ * debian package registry host: [`CI_SCRIPTS_REPO_HOST`](https://repo.creditas.cz/generic/ci-scripts/blob/master/lib/deb-release.sh#L38)
 
  ### How to set different application kubernetes nodePort for deployment in `<product_name>-master` and `<product_name>-staging`
 
@@ -117,7 +111,7 @@ Yes, it is possible via following environment variables:
     * `<product_name>-staging` application deployment should use the same port as in the production
     * `<product_name>-master` application deployment should use the port as in the production decreased by 1000
   * definition of the nodePort should be done by using environment variable in .gitlab-ci.yaml
-    * example: https://gitlab.seznam.net/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/kubernetes/export-manager-service.yaml.tmpl#L13 https://gitlab.seznam.net/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/.gitlab-ci.yml#L306
+    * example: https://repo.creditas.cz/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/kubernetes/export-manager-service.yaml.tmpl#L13 https://repo.creditas.cz/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/.gitlab-ci.yml#L306
 
  Both kubernetes application deployments to `<product_name>-staging` and `<product_name>-master` are by default using development application configuration i.e. production defaults defined in application default configuration is tuned by `conf/development.env` file and applied to kubernetes workload using automatically created kubernetes configmap object.
 
@@ -131,8 +125,6 @@ Yes, it is possible via following environment variables:
     * subprojekt-b
       * conf/
       * kubernetes/
-
- Example https://gitlab.seznam.net/impexp/exporter
 
  ### Why do you template configurations?
 
@@ -150,7 +142,7 @@ Yes, it is possible via following environment variables:
 
  ### What are ci-scripts requirements?
 
- When getting ci-scripts from gitlab pages https://generic.glpages.seznam.net/ci-scripts/ you need to install ci-scripts dependencies yourself by executing `lib/install-ci-scripts.sh`.
+ When getting ci-scripts from gitlab pages https://generic.glpages.creditas.cz/ci-scripts/ you need to install ci-scripts dependencies yourself by executing `lib/install-ci-scripts.sh`.
  The installation script assumes you are on Debian/*buntu distros, if that is not your case you need to install dependencies manually.
 
  ### Deploy does not work, how I set my own kubernetes cluster details?
@@ -166,11 +158,11 @@ Yes, it is possible via following environment variables:
 
  Example:
   * application configuration is templated
-    * https://gitlab.seznam.net/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/conf/manager.cfg.tmpl
+    * https://repo.creditas.cz/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/conf/manager.cfg.tmpl
   * there is `conf/development.env` to adjust development configuration
-    * https://gitlab.seznam.net/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/conf/development.env
+    * https://repo.creditas.cz/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/conf/development.env
   * the resulting k8s development configuration is inserted into application deployment using envFrov syntax via configmap:
-    * https://gitlab.seznam.net/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/kubernetes/export-manager-deployment.yaml.tmpl#L55-57
+    * https://repo.creditas.cz/impexp/exporter/blob/42f784e504006cc0afa87561bf45918c55307d31/manager/kubernetes/export-manager-deployment.yaml.tmpl#L55-57
     * configmap is generated by ci-scripts' kubernetes-config*.sh and looks like:
 
  ```yaml
@@ -190,7 +182,7 @@ Yes, it is possible via following environment variables:
 ## Gitlab CI Example
 
 **NOTE**: You have to enable and set Kubernetes Integration in Gitlab.
-See [sklik-backend/documentation](https://gitlab.seznam.net/sklik-backend/documentation/blob/master/kubernetes.md) or/and Gitlab upstream documentation for details.
+See [crd-backend/documentation](https://repo.creditas.cz/crd-backend/documentation/blob/master/kubernetes.md) or/and Gitlab upstream documentation for details.
 The specified values are then exposed as
 [deployment variables `KUBE_*`](https://docs.gitlab.com/ee/user/project/clusters/deploy_to_cluster.html#deployment-variables)
 (used by kubernetes-ci-init.sh).
@@ -201,7 +193,7 @@ The specified values are then exposed as
 @@ -41,6 +41,8 @@
    when: manual
    # ci-scripts are provided in Jessie image only (Stretch image for statserver is in the Docker file)
-   image: docker.ops.iszn.cz/sklik-devops/ci-scripts:1
+   image: docker.ops.crd.cz/crd-devops/ci-scripts:1
 +  environment:
 +    name: master
    script: |
@@ -219,7 +211,7 @@ stages:
 - deploy
 - release-docker-production
 
-image: docker.ops.iszn.cz/sklik-devops/ci-scripts:1
+image: docker.ops.crd.cz/crd-devops/ci-scripts:1
 
 build:
   stage: build
@@ -278,7 +270,7 @@ deploy master:
   <<: *deploy
   variables:
     ENVIRONMENT: development
-    KUBERNETES_NAMESPACE: sklik-master
+    KUBERNETES_NAMESPACE: crd-master
   environment:
     name: master
   only:
@@ -288,7 +280,7 @@ deploy staging:
   <<: *deploy
   variables:
     ENVIRONMENT: staging
-    KUBERNETES_NAMESPACE: sklik-staging
+    KUBERNETES_NAMESPACE: crd-staging
   environment:
     name: staging
   only:
@@ -310,7 +302,7 @@ release-docker-production:
 
 ### Docker image publishing, notes on Harbor
 
-As of ci-scripts `v1.56.0`, scripts `docker-release.sh, docker-release-ci.sh, docker-build.sh, production-docker-image-name.sh, docker-release-to-production-registry.sh` use the SCIF docker registry ([docker.ops.iszn.cz](https://docker.ops.iszn.cz)) by default. It can still be overridden using the following environment variables:
+As of ci-scripts `v1.56.0`, scripts `docker-release.sh, docker-release-ci.sh, docker-build.sh, production-docker-image-name.sh, docker-release-to-production-registry.sh` use the SCIF docker registry ([docker.ops.crd.cz](https://docker.ops.crd.cz)) by default. It can still be overridden using the following environment variables:
 - `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY`
 - `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY`
 
@@ -320,26 +312,26 @@ In order to authenticate to the registries, use the following variables:
 - `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_USER`
 - `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_PASSWORD_FILE` (Gitlab CI file variable to avoid leaking the secret)
 
-* Note: Until Gitlab will support so-called raw variables, an escaping needs to be used in order to avoid expansion of dollar sign in Harbor robot account username. value of `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_USER` would then be for example: `robot$$sklik-devops-dev`
+* Note: Until Gitlab will support so-called raw variables, an escaping needs to be used in order to avoid expansion of dollar sign in Harbor robot account username. value of `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_USER` would then be for example: `robot$$crd-devops-dev`
 
 Registry path within Docker registry can be then configured explicitly via `--namespace` option for `docker-release.sh, docker-release-ci.sh, docker-build.sh` scripts or via environment variables:
 
-- `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_NAMESPACE` (e.g. `sklik-devops-dev` references development SCIF registry Harbor project)
-- `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_NAMESPACE` (e.g. `sklik-devops` references production SCIF registry Harbor project)
+- `CI_SCRIPTS_DEVELOPMENT_DOCKER_REGISTRY_NAMESPACE` (e.g. `crd-devops-dev` references development SCIF registry Harbor project)
+- `CI_SCRIPTS_PRODUCTION_DOCKER_REGISTRY_NAMESPACE` (e.g. `crd-devops` references production SCIF registry Harbor project)
 
 *Please note that `namespace` as understood in context of ci-scripts does not translate to any of the Harbor defined terms - project and repository. See the example below to understand the mapping:*
 
-*Given image `docker.ops.iszn.cz/sklik-devops/monitoring/prometheus:1`, we have:*
+*Given image `docker.ops.crd.cz/crd-devops/monitoring/prometheus:1`, we have:*
 
 * *from Harbor perspective*
-  - *project `sklik-devops`*
+  - *project `crd-devops`*
   - *repository `monitoring/prometheus`*
 * *from ci-scripts perspective*
-  - *namespace `sklik-devops/monitoring`*
+  - *namespace `crd-devops/monitoring`*
   - *component `prometheus`*
 
 
-**We recommend to keep images in two separated projects and benefit from different SCIF registry [Harbor tag retention policies](https://goharbor.io/docs/1.10/working-with-projects/working-with-images/create-tag-retention-rules/) and [tag immutability rules](https://goharbor.io/docs/1.10/working-with-projects/working-with-images/create-tag-immutability-rules/). [Migration example.](https://gitlab.seznam.net/Sklik-DevOps/fake-app/-/compare/d8f29d59...5e019e52) (May differ based on how exactly you have used ci-scripts in your CI pipeline.)**
+**We recommend to keep images in two separated projects and benefit from different SCIF registry [Harbor tag retention policies](https://goharbor.io/docs/1.10/working-with-projects/working-with-images/create-tag-retention-rules/) and [tag immutability rules](https://goharbor.io/docs/1.10/working-with-projects/working-with-images/create-tag-immutability-rules/). [Migration example.](https://repo.creditas.cz/crd-DevOps/fake-app/-/compare/d8f29d59...5e019e52) (May differ based on how exactly you have used ci-scripts in your CI pipeline.)**
 
 We suggest to place `CI_SCRIPTS_{DEVELOPMENT,PRODUCTION}_DOCKER_REGISTRY_{USER,PASSWORD_FILE}` in your Gitlab group CI env. variables and remaining `CI_SCRIPTS_{DEVELOPMENT,PRODUCTION}_DOCKER_REGISTRY{,NAMESPACE}` place in the projest which is migrated.
 
@@ -358,7 +350,7 @@ There are known following limitations:
  * project Dockerfile requires `ARG BUILD_JOB_NAME`
  * `/ci/docker-release.sh` requires previous execution of `/ci/docker-release-ci.sh`
  * Changelog.md parser requires that `[Unreleased]` section is visually delimited from released versions by single empty line, this is recommended decoration avoiding confusion whether below version is treated as unreleased or not
-   * If you face `Error: [Unreleased] tag has to be defined before the first version tag.` issue you typically need this: https://gitlab.seznam.net/sklik-backend/hbase-schema/commit/ccd82c6687236e97e2ee3426c6c62524b7bd404c
+   * If you face `Error: [Unreleased] tag has to be defined before the first version tag.` issue you typically need this: https://repo.creditas.cz/crd-backend/hbase-schema/commit/ccd82c6687236e97e2ee3426c6c62524b7bd404c
 We'are working on the list above, if you feel something is blocking you, feel free to raise an issue with associated MR for us.
 
 ## Build customization
@@ -379,6 +371,5 @@ about:
    * tag the release commit (we are using `v` version prefix. So, for example `v1.44.0` would be the new release tag.)
      * if the pipeline fails to build the new version, fix it and use a new version tag (it is fine to have a gap in the version numbers)
    * send an announcement about the new version to
-     * ci-scripts-announce@firma.seznam.cz
-     * [mattermost channel](https://teams.szn.cz/technical/channels/ci-scripts)
+     * tbd@creditas.cz
  * profit :)
